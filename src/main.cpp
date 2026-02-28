@@ -30,9 +30,10 @@ int main()
                 std::vector<std::byte> buffer(4096);
                 int bytes_received{0};
 
-                while ((bytes_received = echo_server.receive(std::span(buffer))) > 0)
+                while ((bytes_received = client.receive(std::span(buffer))) > 0)
                 {
-                    std::span<const std::byte> data(buffer.data(), bytes_received);
+                    std::span<const std::byte> data(buffer.data(), static_cast<size_t>(bytes_received));
+                    utils::log(std::string(reinterpret_cast<const char *>(data.data()), data.size()));
                     client.send(data);
                 }
 

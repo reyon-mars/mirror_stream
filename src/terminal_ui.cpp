@@ -34,7 +34,7 @@ namespace ui
                 std::cout << "Enter the IP: ";
                 std::cin >> user_in;
 
-                if (is_valid_ipv4(user_in))
+                if (utils::is_valid_ipv4(user_in))
                 {
                     cfg.sock_addr.ip = user_in;
                 }
@@ -98,11 +98,13 @@ namespace ui
 
     void terminal_ui::get_input(uint16_t &choice)
     {
+        std::cout << ">> ";
         while (!(std::cin >> choice))
         {
             std::cout << "Invalid input. Please enter a number: ";
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cout << ">> ";
         }
     }
 }
