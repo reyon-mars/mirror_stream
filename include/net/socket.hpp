@@ -1,13 +1,14 @@
-#include <iostream>    // for std::cout
-#include <cerrno>      // for errno
-#include <cstring>     // for strerror
-#include <unistd.h>    // for close
-#include <arpa/inet.h> // for inet_pton
+#pragma once
 #include <span>
-#include "net/net_except.hpp"
+#include <string>
+#include <cstdint>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 namespace net
 {
+    using sockfd_t = int;
+
     enum class Domain
     {
         IPv4 = AF_INET,
@@ -32,32 +33,32 @@ namespace net
 
     struct socket_address
     {
-        std::string ip;
-        uint16_t port;
+        std::string ip{"0.0.0.0"};
+        uint16_t port{8080};
 
         sockaddr_in to_sockaddr_in() const;
     };
 
     struct sock_config
     {
-        int sock_fd{-1};
-        socket_address s_adr{};
         Domain domain{Domain::IPv4};
         Type typ{Type::Sstream};
         Protocol proto{Protocol::Default};
+        socket_address sock_addr{"0.0.0.0", 8080};
     };
 
     class Socket
     {
     private:
-        sock_config cfg;
+        sock_config sock_cfg{};
+        sockfd_t sock_fd{-1};
 
-        Socket(int fd, Domain d, Type t, Protocol p);
+        Socket(int fd, const sock_config &cfg);
 
     public:
         ~Socket();
 
-        Socket(Domain d, Type t, Protocol p);
+        Socket(const sock_config &cfg);
 
         Socket(const Socket &) = delete;
         Socket &operator=(const Socket &) = delete;
@@ -65,7 +66,7 @@ namespace net
         Socket(Socket &&other) noexcept;
         Socket &operator=(Socket &&other) noexcept;
 
-        void bind(const std::string &address, uint16_t port);
+        void bind(const socket_address &sock_addr);
         void listen(int backlog = SOMAXCONN);
         [[nodiscard]] Socket accept();
 

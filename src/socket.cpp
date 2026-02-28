@@ -1,4 +1,8 @@
+#pragma once
+#include <iostream>
+#include <unistd.h>
 #include "net/socket.hpp"
+#include "net/net_except.hpp"
 namespace net
 {
     sockaddr_in socket_address::to_sockaddr_in() const
@@ -22,34 +26,30 @@ namespace net
         return addr;
     }
 
-    Socket::Socket(int fd, Domain d, Type t, Protocol p)
+    Socket::Socket(int fd, const sock_config &cfg)
     {
-        cfg.sock_fd = fd;
-        cfg.domain = d;
-        cfg.typ = t;
-        cfg.proto = p;
+        sock_cfg = cfg;
+        sock_fd = fd;
     }
 
     Socket::~Socket()
     {
-        if (cfg.sock_fd >= 0)
+        if (sock_fd >= 0)
         {
-            close(cfg.sock_fd);
+            close(sock_fd);
         }
     }
 
-    Socket::Socket(Domain d, Type t, Protocol p)
+    Socket::Socket(const sock_config &cfg)
     {
-        cfg.domain = d;
-        cfg.typ = t;
-        cfg.proto = p;
+        sock_cfg = cfg;
 
-        cfg.sock_fd = socket(
-            static_cast<int>(cfg.domain),
-            static_cast<int>(cfg.typ),
-            static_cast<int>(cfg.proto));
+        sock_fd = socket(
+            static_cast<int>(sock_cfg.domain),
+            static_cast<int>(sock_cfg.typ),
+            static_cast<int>(sock_cfg.proto));
 
-        if (cfg.sock_fd < 0)
+        if (sock_fd < 0)
         {
             throw net_except("Failed to create a socket.");
         }
@@ -57,54 +57,53 @@ namespace net
 
     Socket::Socket(Socket &&other) noexcept
     {
-        cfg = other.cfg;
-        other.cfg.sock_fd = -1;
+        sock_cfg = other.sock_cfg;
+        sock_fd = other.sock_fd;
+        other.sock_cfg = {};
+        other.sock_fd = -1;
     }
 
     Socket &Socket::operator=(Socket &&other) noexcept
     {
         if (this != &other)
         {
-            if (cfg.sock_fd >= 0)
+            if (sock_fd >= 0)
             {
-                close(cfg.sock_fd);
+                close(sock_fd);
             }
-            cfg = other.cfg;
-            other.cfg.sock_fd = -1;
+            sock_cfg = std::move(other.sock_cfg);
+            sock_fd = other.sock_fd;
+
+            other.sock_cfg = {};
+            other.sock_fd = -1;
         }
         return *this;
     }
 
-    void Socket::bind(const std::string &address, uint16_t port)
+    void Socket::bind(const socket_address &sock_addr)
     {
-        cfg.s_adr.ip = address;
-        cfg.s_adr.port = port;
+        sockaddr_in addr = sock_addr.to_sockaddr_in();
 
-        sockaddr_in addr = cfg.s_adr.to_sockaddr_in();
-
-        if (::bind(cfg.sock_fd,
+        if (::bind(sock_fd,
                    reinterpret_cast<sockaddr *>(&addr),
                    sizeof(addr)) < 0)
         {
             throw net_except(
-                "Failed to bind to " + address + ":" +
-                std::to_string(port) +
-                " - " + std::string(strerror(errno)));
+                "Failed to bind to " + sock_addr.ip + ":" +
+                std::to_string(sock_addr.port));
         }
     }
 
     void Socket::listen(int backlog)
     {
-        if (cfg.sock_fd < 0)
+        if (sock_fd < 0)
         {
             throw net_except("Cannot listen: Socket uninitialized.");
         }
 
-        if (::listen(cfg.sock_fd, backlog) < 0)
+        if (::listen(sock_fd, backlog) < 0)
         {
-            throw net_except(
-                "Failed to listen: " +
-                std::string(strerror(errno)));
+            throw net_except("Failed to listen: ");
         }
 
         std::cout << "Socket is now listening...\n";
@@ -116,18 +115,16 @@ namespace net
         socklen_t client_len = sizeof(client_addr);
 
         int client_fd = ::accept(
-            cfg.sock_fd,
+            sock_fd,
             reinterpret_cast<sockaddr *>(&client_addr),
             &client_len);
 
         if (client_fd < 0)
         {
-            throw net_except(
-                "Accept failed: " +
-                std::string(strerror(errno)));
+            throw net_except("Accept failed: ");
         }
 
-        return Socket(client_fd, cfg.domain, cfg.typ, cfg.proto);
+        return Socket(client_fd, sock_cfg);
     }
 
     int Socket::send(std::span<const std::byte> data)
@@ -137,7 +134,7 @@ namespace net
         while (total_sent < data.size())
         {
             ssize_t sent = ::send(
-                cfg.sock_fd,
+                sock_fd,
                 data.data() + total_sent,
                 data.size() - total_sent,
                 0);
@@ -150,8 +147,7 @@ namespace net
                 throw net_except(
                     "Send failed after " +
                     std::to_string(total_sent) +
-                    " bytes: " +
-                    std::string(strerror(errno)));
+                    " bytes: ");
             }
 
             total_sent += sent;
@@ -166,7 +162,7 @@ namespace net
             return 0;
 
         ssize_t bytes_read = ::recv(
-            cfg.sock_fd,
+            sock_fd,
             buffer.data(),
             buffer.size(),
             0);
@@ -176,9 +172,7 @@ namespace net
             if (errno == EINTR)
                 return receive(buffer);
 
-            throw net_except(
-                "Receive failed: " +
-                std::string(strerror(errno)));
+            throw net_except("Receive failed: ");
         }
 
         return static_cast<int>(bytes_read);
