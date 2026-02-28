@@ -54,7 +54,6 @@ namespace ui
 
             case 3:
             {
-
                 cfg.typ = terminal_ui::type_submenu();
                 break;
             }
@@ -68,12 +67,12 @@ namespace ui
 
             default:
             {
-
                 std::cout << "Invalid choice. \n";
                 break;
             }
             }
         }
+
         return cfg;
     }
 

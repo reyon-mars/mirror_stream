@@ -1,50 +1,58 @@
 #include "net/socket.hpp"
+#include "net/net_except.hpp"
+#include "ui/terminal_ui.hpp"
+#include "utils/utils.hpp"
 #include <iostream>
+#include <string>
 #include <vector>
 #include <span>
-#include <string>
-#include <cstddef>
 
 int main()
 {
-
     try
     {
-        // Create a TCP IPv4 socket
-        net::Socket server(net::Domain::IPv4, net::Type::Sstream, net::Protocol::TCP);
+        net::sock_config config = ui::terminal_ui::config_menu();
 
-        // Bind to all interfaces on port 8080
-        server.bind("0.0.0.0", 8080);
+        net::Socket echo_server(config);
 
-        // Listen for incoming connections
-        server.listen();
+        echo_server.bind(config.sock_addr);
+        echo_server.listen();
 
-        std::cout << "Waiting for a client to connect...\n";
+        std::cout << "Echo server listening on " << config.sock_addr.ip << " : " << config.sock_addr.port << "\n";
 
-        // Accept one connection
-        net::Socket client = server.accept();
-        std::cout << "Client connected!\n";
+        while (true)
+        {
+            try
+            {
+                net::Socket client = echo_server.accept();
+                std::cout << "Client connected. \n";
 
-        // Receive and echo back data
-        std::vector<std::byte> buffer(1024);
-        int bytes_received = client.receive(buffer);
-        std::string message(reinterpret_cast<char *>(buffer.data()), bytes_received);
-        std::cout << "Received: " << message << "\n";
+                std::vector<std::byte> buffer(4096);
+                int bytes_received{0};
 
-        // Echo back
-        client.send(std::span<const std::byte>(buffer.data(), bytes_received));
-        std::cout << "Echoed back to client\n";
+                while ((bytes_received = echo_server.receive(std::span(buffer))) > 0)
+                {
+                    std::span<const std::byte> data(buffer.data(), bytes_received);
+                    client.send(data);
+                }
+
+                std::cout << "Client disconnected. \n";
+            }
+            catch (const net::net_except &e)
+            {
+                std::cerr << "Client error: " << e.what() << "\n";
+            }
+        }
     }
     catch (const net::net_except &e)
     {
-        std::cerr << "Network error: " << e.what() << "\n";
+        std::cerr << "Server error: " << e.what() << "\n";
         return 1;
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Error: " << e.what() << "\n";
-        return 1;
+        std::cerr << "Unexpected error: " << e.what() << "\n";
+        return 2;
     }
-
     return 0;
 }
