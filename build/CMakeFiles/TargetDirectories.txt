@@ -1,2 +1,0 @@
-/Users/reyon/c_cpp/c++_projects/echo_server/build/CMakeFiles/edit_cache.dir
-/Users/reyon/c_cpp/c++_projects/echo_server/build/CMakeFiles/rebuild_cache.dir

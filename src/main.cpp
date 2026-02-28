@@ -5,8 +5,11 @@
 #include <string>
 #include <cstddef>
 
-int main() {
-    try {
+int main()
+{
+
+    try
+    {
         // Create a TCP IPv4 socket
         net::Socket server(net::Domain::IPv4, net::Type::Sstream, net::Protocol::TCP);
 
@@ -25,17 +28,20 @@ int main() {
         // Receive and echo back data
         std::vector<std::byte> buffer(1024);
         int bytes_received = client.receive(buffer);
-        std::string message(reinterpret_cast<char*>(buffer.data()), bytes_received);
+        std::string message(reinterpret_cast<char *>(buffer.data()), bytes_received);
         std::cout << "Received: " << message << "\n";
 
         // Echo back
         client.send(std::span<const std::byte>(buffer.data(), bytes_received));
         std::cout << "Echoed back to client\n";
-
-    } catch (const net::net_except& e) {
+    }
+    catch (const net::net_except &e)
+    {
         std::cerr << "Network error: " << e.what() << "\n";
         return 1;
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception &e)
+    {
         std::cerr << "Error: " << e.what() << "\n";
         return 1;
     }
