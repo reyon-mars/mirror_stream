@@ -129,13 +129,13 @@ namespace net
     int Socket::send(std::span<const std::byte> data)
     {
         size_t total_sent = 0;
-
         while (total_sent < data.size())
         {
+            auto remaining = data.subspan(total_sent);
             ssize_t sent = ::send(
                 sock_fd,
-                data.data() + total_sent,
-                data.size() - total_sent,
+                remaining.data(),
+                remaining.size(),
                 0);
 
             if (sent < 0)

@@ -2,7 +2,9 @@
 #include "net/net_except.hpp"
 #include "ui/terminal_ui.hpp"
 #include "utils/utils.hpp"
+#include "net/connection.hpp"
 #include <iostream>
+#include <thread>
 #include <string>
 #include <vector>
 #include <span>
