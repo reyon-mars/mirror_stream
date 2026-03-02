@@ -1,4 +1,4 @@
-w#include <iostream>
+#include <iostream>
 #include <unistd.h>
 #include "net/socket.hpp"
 #include "net/net_except.hpp"

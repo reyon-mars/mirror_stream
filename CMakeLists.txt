@@ -12,9 +12,9 @@ include_directories(
 
 set(SOURCES
     src/main.cpp
-    src/socket.cpp
-    src/terminal_ui.cpp
-    src/connection.cpp
+    src/net/socket.cpp
+    src/net/connection.cpp
+    src/ui/terminal_ui.cpp
 )
 
 add_executable(server ${SOURCES})

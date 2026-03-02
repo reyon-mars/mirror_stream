@@ -10,7 +10,7 @@ namespace net
         try
         {
             std::vector<std::byte> buffer(4096);
-            int bytes_received{0};
+            ssize_t bytes_received{0};
 
             while ((bytes_received = client.receive(std::span(buffer))) > 0)
             {

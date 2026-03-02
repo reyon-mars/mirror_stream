@@ -70,7 +70,7 @@ namespace net
         void listen(int backlog = SOMAXCONN);
         [[nodiscard]] Socket accept();
 
-        int send(std::span<const std::byte> data);
-        int receive(std::span<std::byte> buffer);
+        ssize_t send(std::span<const std::byte> data);
+        ssize_t receive(std::span<std::byte> buffer);
     };
 }
