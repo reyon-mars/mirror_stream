@@ -27,23 +27,14 @@ int main()
             try
             {
                 net::Socket client = echo_server.accept();
-                std::cout << "Client connected. \n";
+                utils::log("New client connected.");
 
-                std::vector<std::byte> buffer(4096);
-                int bytes_received{0};
-
-                while ((bytes_received = client.receive(std::span(buffer))) > 0)
-                {
-                    std::span<const std::byte> data(buffer.data(), static_cast<size_t>(bytes_received));
-                    utils::log(std::string(reinterpret_cast<const char *>(data.data()), data.size()));
-                    client.send(data);
-                }
-
-                std::cout << "Client disconnected. \n";
+                std::thread req_handler(net::echo, std::move(client));
+                req_handler.detach();
             }
             catch (const net::net_except &e)
             {
-                std::cerr << "Client error: " << e.what() << "\n";
+                std::cerr << "Accept error: " << e.what() << "\n";
             }
         }
     }

@@ -2,5 +2,5 @@
 
 namespace net
 {
-    void echo(net::Socket &&client);
+    void echo(net::Socket &&client) noexcept;
 }
