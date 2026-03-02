@@ -14,6 +14,7 @@ set(SOURCES
     src/main.cpp
     src/socket.cpp
     src/terminal_ui.cpp
+    src/connection.cpp
 )
 
 add_executable(server ${SOURCES})
