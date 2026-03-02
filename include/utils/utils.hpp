@@ -1,5 +1,6 @@
 #pragma once
 #include <arpa/inet.h>
+#include <iostream>
 #include <string>
 #include <chrono>
 #include <format>
@@ -14,6 +15,6 @@ namespace utils
     inline void log(const std::string &msg)
     {
         auto now = std::chrono::system_clock::now();
-        std::cout << "[" << std::format("{:%F %T}", now) << "]" << msg << "\n";
+        std::cout << "[" << std::format("{:%F %T}", now) << "] " << msg << "\n";
     }
 }
