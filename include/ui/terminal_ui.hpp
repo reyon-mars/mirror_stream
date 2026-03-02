@@ -1,15 +1,15 @@
 #pragma once
-#include "net/socket.hpp"
+#include "net/sock_config.hpp"
 
 namespace ui
 {
     class terminal_ui
     {
     private:
-        static void get_input(uint16_t &choice);
+        static net::sock_config config_menu();
         static net::Type type_submenu();
 
     public:
-        static net::sock_config config_menu();
+        static void run(net::sock_config &cfg);
     };
 }

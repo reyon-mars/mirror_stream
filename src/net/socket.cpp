@@ -149,7 +149,7 @@ namespace net
                     " bytes: ");
             }
 
-            total_sent += sent;
+            total_sent += static_cast<size_t>(sent);
         }
 
         return static_cast<int>(total_sent);

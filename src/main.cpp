@@ -14,7 +14,8 @@ int main()
 {
     try
     {
-        net::sock_config config = ui::terminal_ui::config_menu();
+        net::sock_config config{};
+        ui::terminal_ui::run(config);
 
         net::Socket echo_server(config);
 

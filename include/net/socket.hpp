@@ -1,4 +1,7 @@
 #pragma once
+#include "net/socket_address.hpp"
+#include "net/socket_type.hpp"
+#include "net/sock_config.hpp"
 #include <span>
 #include <string>
 #include <cstdint>
@@ -7,46 +10,6 @@
 
 namespace net
 {
-    using sockfd_t = int;
-
-    enum class Domain
-    {
-        IPv4 = AF_INET,
-        IPv6 = AF_INET6,
-        UNIX = AF_UNIX,
-        UNSPECIFIED = AF_UNSPEC
-    };
-
-    enum class Type
-    {
-        Sstream = SOCK_STREAM,
-        Datagram = SOCK_DGRAM,
-        Raw = SOCK_RAW
-    };
-
-    enum class Protocol
-    {
-        Default = 0,
-        TCP = IPPROTO_TCP,
-        UDP = IPPROTO_UDP
-    };
-
-    struct socket_address
-    {
-        std::string ip{"0.0.0.0"};
-        uint16_t port{8080};
-
-        sockaddr_in to_sockaddr_in() const;
-    };
-
-    struct sock_config
-    {
-        Domain domain{Domain::IPv4};
-        Type typ{Type::Sstream};
-        Protocol proto{Protocol::Default};
-        socket_address sock_addr{"0.0.0.0", 8080};
-    };
-
     class Socket
     {
     private:

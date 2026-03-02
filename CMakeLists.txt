@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+option(BUILD_GUI "Build GUI version" OFF)
+
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
 )
@@ -14,6 +16,8 @@ set(SOURCES
     src/main.cpp
     src/net/connection.cpp
     src/net/socket.cpp
+    src/ui/input_handler.cpp
+    src/ui/menu_renderer.cpp
     src/ui/terminal_ui.cpp
     src/utils/logger.cpp
     src/utils/utils.cpp

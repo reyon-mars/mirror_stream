@@ -1,8 +1,10 @@
 #include "ui/terminal_ui.hpp"
+#include "net/socket_type.hpp"
+#include "ui/input_handler.hpp"
+#include "ui/menu_renderer.hpp"
+#include "ui/color.hpp"
+#include "utils/logger.hpp"
 #include "utils/utils.hpp"
-#include <iostream>
-#include <limits>
-#include <string>
 
 namespace ui
 {
@@ -13,98 +15,97 @@ namespace ui
         cfg.sock_addr.port = 8080;
         cfg.typ = net::Type::Sstream;
 
-        uint16_t choice = 0;
-
-        while (choice != 5)
+        uint16_t user_choice{0};
+        while (user_choice != 5)
         {
-            std::cout << "--- Network Configuration ---\n";
-            std::cout << "1. Set IP (current: " << cfg.sock_addr.ip << ")\n";
-            std::cout << "2. Set Port (current: " << cfg.sock_addr.port << ")\n";
-            std::cout << "3. Select Type (current: " << (cfg.typ == net::Type::Sstream ? "TCP" : "UDP") << ")\n";
-            std::cout << "4. Reset. \n";
-            std::cout << "5. Done. \n";
 
-            get_input(choice);
+            menu_renderer::show_main_menu(cfg.sock_addr.ip,
+                                          cfg.sock_addr.port,
+                                          (cfg.typ == net::Type::Sstream ? "TCP" : "UDP"));
 
-            switch (choice)
+            user_choice = input_handler::get_uint16();
+
+            switch (user_choice)
             {
             case 1:
             {
-                std::string user_in;
-                std::cout << "Enter the IP: ";
-                std::cin >> user_in;
-
-                if (utils::is_valid_ipv4(user_in))
+                std::cout << "Enter IP: ";
+                std::string ip = input_handler::get_string();
+                if (utils::is_valid_ipv4(ip))
                 {
-                    cfg.sock_addr.ip = user_in;
+                    cfg.sock_addr.ip = ip;
                 }
                 else
                 {
-                    std::cout << "Invalid format or ipv4 address. [ " + user_in + " ] \n";
+                    std::cout << "Invalid IP: " << ip << "\n";
                 }
                 break;
             }
 
             case 2:
             {
-                std::cout << "Enter the Port: ";
-                std::cin >> cfg.sock_addr.port;
+                std::cout << "Enter Port: ";
+                uint16_t port = input_handler::get_uint16();
+                if (utils::is_valid_port(port))
+                {
+                    cfg.sock_addr.port = port;
+                }
+                else
+                {
+                    std::cout << "Invalid port: " << port << "\n";
+                }
                 break;
             }
-
             case 3:
             {
-                cfg.typ = terminal_ui::type_submenu();
+                cfg.typ = type_submenu();
                 break;
             }
-
             case 4:
             {
                 cfg = net::sock_config{};
                 cfg.typ = net::Type::Sstream;
                 break;
             }
-
+            case 5:
+                break;
             default:
-            {
-                std::cout << "Invalid choice. \n";
+                std::cout << "Invalid selection, try again.\n";
                 break;
             }
-            }
         }
-
         return cfg;
     }
-
     net::Type terminal_ui::type_submenu()
     {
-        uint16_t sub_choice = 0;
         while (true)
         {
-            std::cout << "1. TCP (Stream)\n2. UDP (Datagram)\n";
-            get_input(sub_choice);
-
-            switch (sub_choice)
+            menu_renderer::show_type_menu();
+            uint16_t choice = input_handler::get_uint16();
+            switch (choice)
             {
             case 1:
                 return net::Type::Sstream;
             case 2:
                 return net::Type::Datagram;
             default:
-                std::cout << "Invalid selection. Try again.\n";
+                std::cout << "Invalid selection, try again.\n";
+                break;
             }
         }
     }
 
-    void terminal_ui::get_input(uint16_t &choice)
+    void terminal_ui::run(net::sock_config &cfg)
     {
-        std::cout << ">> ";
-        while (!(std::cin >> choice))
-        {
-            std::cout << "Invalid input. Please enter a number: ";
-            std::cin.clear();
-            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << ">> ";
-        }
+        std::cout << color::set_cyan("=== Mirror Stream Terminal ===\n");
+
+        cfg = config_menu();
+
+        std::cout << (color::set_green("\nConfiguration Complete"));
+
+        std::cout << ("IP: " + cfg.sock_addr.ip + "\n");
+        std::cout << ("Port: " + std::to_string(cfg.sock_addr.port) + "\n");
+        std::cout << (std::string("Type: ") +
+                      (cfg.typ == net::Type::Sstream ? "TCP" : "UDP") + "\n");
     }
 }
