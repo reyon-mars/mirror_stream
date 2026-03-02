@@ -1,4 +1,5 @@
 #include "net/socket.hpp"
+#include "ui/term.hpp"
 #include "net/net_except.hpp"
 #include "ui/terminal_ui.hpp"
 #include "utils/utils.hpp"
@@ -12,6 +13,9 @@
 
 int main()
 {
+    auto &term_ctx = ui::term::terminal_context::get_instance();
+    term_ctx.clear();
+
     try
     {
         net::sock_config config{};

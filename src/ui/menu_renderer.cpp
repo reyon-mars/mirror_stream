@@ -39,6 +39,5 @@ namespace ui
                   << "UDP " << color::cyan << "(Datagram)" << color::reset << "\n";
 
         std::cout << "-----------------------------\n";
-        std::cout << ">> ";
     }
 }

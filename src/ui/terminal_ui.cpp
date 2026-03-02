@@ -29,7 +29,7 @@ namespace ui
             {
             case 1:
             {
-                std::cout << "Enter IP: ";
+                std::cout << "Enter IP ";
                 std::string ip = input_handler::get_string();
                 if (utils::is_valid_ipv4(ip))
                 {
@@ -44,7 +44,7 @@ namespace ui
 
             case 2:
             {
-                std::cout << "Enter Port: ";
+                std::cout << "Enter Port ";
                 uint16_t port = input_handler::get_uint16();
                 if (utils::is_valid_port(port))
                 {
@@ -101,7 +101,7 @@ namespace ui
 
         cfg = config_menu();
 
-        std::cout << (color::set_green("\nConfiguration Complete"));
+        std::cout << (color::set_green("\nConfiguration Complete\n"));
 
         std::cout << ("IP: " + cfg.sock_addr.ip + "\n");
         std::cout << ("Port: " + std::to_string(cfg.sock_addr.port) + "\n");
