@@ -1,3 +1,4 @@
+#pragma once
 #include "net/socket.hpp"
 
 namespace net
