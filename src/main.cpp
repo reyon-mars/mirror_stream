@@ -3,6 +3,7 @@
 #include "ui/terminal_ui.hpp"
 #include "utils/utils.hpp"
 #include "net/connection.hpp"
+#include "utils/logger.hpp"
 #include <iostream>
 #include <thread>
 #include <string>
@@ -27,25 +28,25 @@ int main()
             try
             {
                 net::Socket client = echo_server.accept();
-                utils::log("New client connected.");
+                utils::logger::log("New client connected.");
 
                 std::thread req_handler(net::echo, std::move(client));
                 req_handler.detach();
             }
             catch (const net::net_except &e)
             {
-                std::cerr << "Accept error: " << e.what() << "\n";
+                utils::logger::log_err(std::string("Accept error: ") + e.what());
             }
         }
     }
     catch (const net::net_except &e)
     {
-        std::cerr << "Server error: " << e.what() << "\n";
+        utils::logger::log_err(std::string("Server error: ") + e.what());
         return 1;
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Unexpected error: " << e.what() << "\n";
+        utils::logger::log_err(std::string("Unexpected error: ") + e.what());
         return 2;
     }
     return 0;

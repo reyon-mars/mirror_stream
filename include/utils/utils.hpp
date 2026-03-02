@@ -18,11 +18,17 @@ namespace net
 namespace utils
 {
 
+    constexpr inline bool is_little_endian() noexcept
+    {
+        uint16_t num = 0x01;
+        auto bytes = std::bit_cast<std::array<uint8_t, sizeof(uint16_t)>>(num);
+        return bytes.front() == 1;
+    }
+
     template <typename T>
-    concept byte_swappable =
-        std::is_integral_v<T> &&
-        !std::is_same_v<T, bool> &&
-        sizeof(T) > 1;
+    concept byte_swappable = (std::is_integral_v<T> &&
+                              !std::is_same_v<T, bool> &&
+                              sizeof(T) > 1);
 
     template <byte_swappable T>
     constexpr inline T byte_swap(T value) noexcept
@@ -49,13 +55,7 @@ namespace utils
         return byte_swap<T>(value);
     }
 
-    constexpr inline bool is_little_endian() noexcept
-    {
-        uint16_t num = 0x01;
-        const uint8_t *const ptr = reinterpret_cast<uint8_t *>(&num);
-        return *ptr == 1;
-    }
-    inline bool is_valid_ipv4(const std::string &ip);
-    inline bool is_valid_port(const int port_no);
+    bool is_valid_ipv4(const std::string &ip);
+    bool is_valid_port(const int port_no);
     std::string_view trim(std::string_view str);
 }

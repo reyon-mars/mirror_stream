@@ -13,11 +13,11 @@ namespace utils
     private:
         static std::mutex log_mtx_;
 
-        static inline void emit(std::string_view level, std::string_view msg, std::string_view color);
+        static void emit(std::string_view level, std::string_view msg, std::string_view color);
 
     public:
-        static inline void log(std::string_view msg);
-        static inline void log_err(std::string_view err_msg);
-        static inline void log_warn(std::string_view warn_msg);
+        static void log(std::string_view msg);
+        static void log_err(std::string_view err_msg);
+        static void log_warn(std::string_view warn_msg);
     };
 }
