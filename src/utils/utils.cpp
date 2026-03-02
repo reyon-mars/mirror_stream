@@ -11,4 +11,10 @@ namespace utils
         sockaddr_in addr{};
         return inet_pton(AF_INET, ip.c_str(), &addr.sin_addr.s_addr) == 1;
     }
+
+    inline bool is_valid_port(const int port_no)
+    {
+        return port_no >= 1024 && port_no <= 65535;
+    }
+
 }

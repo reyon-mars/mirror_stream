@@ -1,6 +1,61 @@
 #pragma once
+#include <concepts>
+#include <type_traits>
+#include <bit>
+#include <array>
+#include <cstdint>
+#include <utility>
 #include <string>
+
+namespace net
+{
+    enum class byte_order
+    {
+        little,
+        big
+    };
+}
 namespace utils
 {
+
+    template <typename T>
+    concept byte_swappable =
+        std::is_integral_v<T> &&
+        !std::is_same_v<T, bool> &&
+        sizeof(T) > 1;
+
+    template <byte_swappable T>
+    constexpr inline T byte_swap(T value) noexcept
+    {
+        auto bytes = std::bit_cast<std::array<std::byte, sizeof(T)>>(value);
+        size_t size = sizeof(T);
+        for (size_t i = 0; i < size / 2; i++)
+        {
+            std::swap(bytes[i], bytes[size - i - 1]);
+        }
+        return std::bit_cast<T>(bytes);
+    }
+
+    template <byte_swappable T>
+    constexpr inline T order_bytes(T value, net::byte_order order) noexcept
+    {
+        auto system_order = (is_little_endian() ? net::byte_order::little : net::byte_order::big);
+
+        if (system_order == order)
+        {
+            return value;
+        }
+
+        return byte_swap<T>(value);
+    }
+
+    constexpr inline bool is_little_endian() noexcept
+    {
+        uint16_t num = 0x01;
+        const uint8_t *const ptr = reinterpret_cast<uint8_t *>(&num);
+        return *ptr == 1;
+    }
     inline bool is_valid_ipv4(const std::string &ip);
+    inline bool is_valid_port(const int port_no);
+    std::string_view trim(std::string_view str);
 }
