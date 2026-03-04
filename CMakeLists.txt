@@ -2,20 +2,27 @@ cmake_minimum_required(VERSION 3.20)
 
 project(mirror_stream VERSION 1.0 LANGUAGES CXX)
 
+# --------------------------------------------------
+# Global Configuration
+# --------------------------------------------------
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Qt auto processing (must be set before targets)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
 option(BUILD_TUI "Build Terminal UI Version" ON)
 option(BUILD_GUI "Build GUI version" OFF)
 
-include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-)
-
-# --------------------------
+# --------------------------------------------------
 # Core Library
-# --------------------------
+# --------------------------------------------------
 
 add_library(core STATIC
     src/net/connection.cpp
@@ -24,64 +31,89 @@ add_library(core STATIC
     src/utils/utils.cpp
 )
 
-target_include_directories(core PUBLIC include)
+# Add project-level include directory
+target_include_directories(core
+    PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 if(UNIX)
     target_link_libraries(core PUBLIC pthread)
 endif()
 
-target_compile_features(core PUBLIC cxx_std_20)
-
 if(MSVC)
     target_compile_options(core PRIVATE /W4 /permissive-)
 else()
-    target_compile_options(core PRIVATE -Wall -Wextra -pedantic -Wshadow -Wconversion)
+    target_compile_options(core PRIVATE
+        -Wall
+        -Wextra
+        -pedantic
+        -Wshadow
+        -Wconversion
+    )
 endif()
 
-# --------------------------
+# --------------------------------------------------
 # TUI Executable
-# --------------------------
+# --------------------------------------------------
 
 if(BUILD_TUI)
 
-    add_executable(mirror_stream_tui)
-    target_sources(
+    add_executable(mirror_stream_tui
         src/ui/input_handler.cpp
         src/ui/menu_renderer.cpp
         src/ui/terminal_ui.cpp
         src/main_tui.cpp
     )
 
-    target_link_libraries(mirror_stream_tui PRIVATE core)
+    # GUI and TUI both need project include
+    target_include_directories(mirror_stream_tui
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+
+    target_link_libraries(mirror_stream_tui
+        PRIVATE core
+    )
 
     install(TARGETS mirror_stream_tui DESTINATION bin)
 
 endif()
 
-
-# --------------------------
+# --------------------------------------------------
 # GUI Executable
-# --------------------------
+# --------------------------------------------------
 
 if(BUILD_GUI)
+
     find_package(Qt6 REQUIRED COMPONENTS Widgets)
-    set(CMAKE_AUTOMOC ON)
-    set(CMAKE_AUTORCC ON)
-    set(CMAKE_AUTOUIC ON)
 
-    add_executable(mirror_stream_gui)
-
-    target_sources(mirror_stream_gui
+    add_executable(mirror_stream_gui
+        # GUI source files
+        src/gui/server_controller.cpp
         src/gui/config_widget.cpp
         src/gui/main_window.cpp
         src/main_gui.cpp
+
+        # Explicitly list headers for AUTOMOC
+        include/gui/server_controller.hpp
+        include/gui/config_widget.hpp
+        include/gui/main_window.hpp
     )
 
-    target_link_libraries(
+    # Ensure project-level includes are visible
+    target_include_directories(mirror_stream_gui
+        PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+
+    # Link core and Qt
+    target_link_libraries(mirror_stream_gui
         PRIVATE
         core
         Qt6::Widgets
     )
 
     install(TARGETS mirror_stream_gui DESTINATION bin)
+
 endif()
