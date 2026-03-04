@@ -29,6 +29,7 @@ add_library(core STATIC
     src/net/socket.cpp
     src/utils/logger.cpp
     src/utils/utils.cpp
+    src/utils/thread_pool.cpp
 )
 
 # Add project-level include directory
