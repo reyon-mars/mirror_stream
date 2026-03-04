@@ -4,9 +4,9 @@
 #include "ui/term.hpp"
 #include "ui/terminal_ui.hpp"
 #include "utils/logger.hpp"
+#include "utils/thread_pool.hpp"
 #include <iostream>
 #include <string>
-#include <thread>
 
 int main()
 {
@@ -15,6 +15,8 @@ int main()
 
 	try
 	{
+		utils::thread_pool t_pool;
+
 		net::sock_config config{};
 		ui::terminal_ui::run(config);
 
@@ -32,8 +34,11 @@ int main()
 				net::Socket client = echo_server.accept();
 				utils::logger::log("New client connected.");
 
-				std::thread req_handler(net::echo, std::move(client));
-				req_handler.detach();
+				t_pool.submit(
+					[client = std::move(client)]() mutable
+					{
+						net::echo(std::move(client));
+					});
 			}
 			catch (const net::net_except& e)
 			{
