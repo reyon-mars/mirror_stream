@@ -10,14 +10,13 @@ namespace utils
 {
 	std::mutex logger::log_mtx_;
 
-	void
-	logger::emit_log(std::string_view log_level, std::string_view log_msg, std::string_view log_color)
+	void logger::emit_log(std::string_view log_level, std::string_view log_msg, std::string_view log_color)
 	{
 		auto now = std::chrono::floor<std::chrono::seconds>(std::chrono::system_clock::now());
 		{
 			std::lock_guard<std::mutex> lock(log_mtx_);
-			std::cout << std::format(
-				"[{:%F %T}] {} {:<5}{} {}\n", now, log_color, log_level, ui::color::reset, log_msg);
+			std::cout
+				<< std::format("[{:%F %T}] {} {:<5}{} {}\n", now, log_color, log_level, ui::color::reset, log_msg);
 		}
 	}
 

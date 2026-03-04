@@ -1,5 +1,7 @@
 #pragma once
+#include <algorithm>
 #include <condition_variable>
+#include <cstddef>
 #include <functional>
 #include <mutex>
 #include <queue>
@@ -19,47 +21,24 @@ namespace utils
 		bool stop_ = false;
 
 	public:
-		thread_pool(size_t thread_count = (std::thread::hardware_concurrency() * 2))
-		{
-			workers_.reserve(thread_count);
-			for (size_t i = 0; i < thread_count; i++)
-			{
-				workers_.emplace_back(
-					[this]
-					{
-						while (true)
-						{
-							std::function<void()> task;
-							{
-								std::unique_lock<std::mutex> lock(this->queue_mtx_);
-								this->cv_.wait(lock,
-											   [this]
-											   {
-												   return this->stop_ || !this->tasks_.empty();
-											   });
+		thread_pool(size_t thread_count = (std::max<size_t>(1, std::thread::hardware_concurrency() * 2)));
+		thread_pool(const thread_pool& other) = delete;
+		thread_pool& operator=(const thread_pool& other) = delete;
 
-								if (this->stop_ && this->tasks_.empty())
-								{
-									return;
-								}
-								task = std::move(this->tasks_.front());
-								this->tasks_.pop();
-							}
-							task();
-						}
-					});
-			}
-		}
+		thread_pool(thread_pool&& other) = delete;
+		thread_pool& operator=(thread_pool&& other) = delete;
 
-		void submit(std::function<void()> f)
+		~thread_pool();
+
+		template <typename F> void submit(F&& task)
 		{
 			{
-				std::lock_guard<std::mutex> lock(queue_mtx_);
-				this->tasks_.emplace(std::move(f));
+				std::lock_guard<std::mutex> lock{queue_mtx_};
+				tasks_.emplace(std::forward<F>(task));
 			}
 			cv_.notify_one();
 		}
 
-		~thread_pool() = default;
+		void shutdown();
 	};
 } // namespace utils
