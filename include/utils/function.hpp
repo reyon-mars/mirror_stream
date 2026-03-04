@@ -1,6 +1,7 @@
 #pragma once
 #include <concepts>
 #include <functional>
+#include <stdexcept>
 #include <type_traits>
 #include <utility>
 
@@ -38,7 +39,15 @@ namespace utils
 
 			callable_base* clone() const override
 			{
-				return new callable_impl<Callable>(m_callable_);
+				if constexpr (std::copy_constructible<Callable>)
+				{
+
+					return new callable_impl<Callable>(m_callable_);
+				}
+				else
+				{
+					return nullptr;
+				}
 			}
 		};
 
@@ -57,8 +66,20 @@ namespace utils
 			delete m_callable;
 		}
 
-		function(const function& other) : m_callable(other.m_callable ? other.m_callable->clone() : nullptr)
+		function(const function& other)
 		{
+			if (other.m_callable)
+			{
+				m_callable = other.m_callable->clone();
+				if (!m_callable)
+				{
+					throw std::runtime_error("utils::function: Attempted to copy a move-only task.");
+				}
+			}
+			else
+			{
+				m_callable = nullptr;
+			}
 		}
 
 		function(function&& other) noexcept : m_callable(other.m_callable)
