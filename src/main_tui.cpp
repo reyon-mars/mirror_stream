@@ -1,4 +1,5 @@
 #include "net/connection.hpp"
+#include "net/connection_stats.hpp"
 #include "net/net_except.hpp"
 #include "net/socket.hpp"
 #include "ui/term.hpp"
@@ -33,9 +34,10 @@ int main()
 			{
 				net::Socket client = echo_server.accept();
 				utils::logger::log("New client connected.");
+				utils::logger::log("Active Connections: " + std::to_string(net::connection_stats::get_active_conn()));
 
 				t_pool.submit(
-					[client = std::move(client)]() mutable
+					[client = std::move(client), stats = net::connection_stats{}]() mutable
 					{
 						net::echo(std::move(client));
 					});
