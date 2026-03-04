@@ -1,4 +1,5 @@
 #include "utils/thread_pool.hpp"
+#include <mutex>
 namespace utils
 {
 
@@ -40,15 +41,17 @@ namespace utils
 		}
 	}
 
-    template<typename F>
-	void thread_pool::submit(std::function<void()> f)
+	thread_pool::~thread_pool()
 	{
-		{
-			std::lock_guard<std::mutex> lock(queue_mtx_);
-			this->tasks_.emplace(std::move(f));
-		}
-		cv_.notify_one();
+		shutdown();
 	}
 
-	thread_pool::~thread_pool() = default;
+	void thread_pool::shutdown()
+	{
+		{
+			std::lock_guard<std::mutex> lock{queue_mtx_};
+			stop_ = true;
+		}
+		cv_.notify_all();
+	}
 } // namespace utils

@@ -20,6 +20,8 @@ namespace utils
 		std::condition_variable cv_;
 		bool stop_ = false;
 
+		void shutdown();
+
 	public:
 		thread_pool(size_t thread_count = (std::max<size_t>(1, std::thread::hardware_concurrency() * 2)));
 		thread_pool(const thread_pool& other) = delete;
@@ -38,7 +40,5 @@ namespace utils
 			}
 			cv_.notify_one();
 		}
-
-		void shutdown();
 	};
 } // namespace utils
