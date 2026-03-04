@@ -32,7 +32,8 @@ namespace utils
 
 		~thread_pool();
 
-		template <typename F> void submit(F&& task)
+		template <typename F>
+		void submit(F&& task)
 		{
 			{
 				std::lock_guard<std::mutex> lock{queue_mtx_};
