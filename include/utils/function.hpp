@@ -39,15 +39,29 @@ namespace utils
 
 			callable_base* clone() const override
 			{
-				if constexpr (std::copy_constructible<Callable>)
-				{
+				return nullptr;
+			}
+		};
 
-					return new callable_impl<Callable>(m_callable_);
-				}
-				else
-				{
-					return nullptr;
-				}
+		template <typename Callable>
+			requires std::copy_constructible<Callable>
+		struct callable_impl<Callable> : callable_base
+		{
+			Callable m_callable_;
+
+			template <typename T>
+			callable_impl(T&& c) : m_callable_(std::forward<T>(c))
+			{
+			}
+
+			R invoke(Args... args) override
+			{
+				return m_callable_(std::forward<Args>(args)...);
+			}
+
+			callable_base* clone() const override
+			{
+				return new callable_impl<Callable>(m_callable_);
 			}
 		};
 
