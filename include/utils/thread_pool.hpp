@@ -1,8 +1,8 @@
 #pragma once
+#include "utils/function.hpp"
 #include <algorithm>
 #include <condition_variable>
 #include <cstddef>
-#include <functional>
 #include <mutex>
 #include <queue>
 #include <thread>
@@ -14,7 +14,7 @@ namespace utils
 	{
 	private:
 		std::vector<std::jthread> workers_;
-		std::queue<std::function<void()>> tasks_;
+		std::queue<utils::function<void()>> tasks_;
 
 		std::mutex queue_mtx_;
 		std::condition_variable cv_;

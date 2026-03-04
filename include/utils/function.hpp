@@ -38,7 +38,7 @@ namespace utils
 
 			callable_base* clone() const override
 			{
-				return new callable_impl(m_callable_);
+				return new callable_impl<Callable>(m_callable_);
 			}
 		};
 

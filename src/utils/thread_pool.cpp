@@ -13,7 +13,7 @@ namespace utils
 				{
 					while (true)
 					{
-						std::function<void()> task;
+						utils::function<void()> task;
 						{
 							std::unique_lock<std::mutex> lock(this->queue_mtx_);
 							this->cv_.wait(lock,
@@ -29,12 +29,15 @@ namespace utils
 							task = std::move(this->tasks_.front());
 							this->tasks_.pop();
 						}
-						try
+						if (task)
 						{
-							task();
-						}
-						catch (...)
-						{
+							try
+							{
+								task();
+							}
+							catch (...)
+							{
+							}
 						}
 					}
 				});
